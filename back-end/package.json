@@ -1,0 +1,29 @@
+{
+  "name": "back-end",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch ./index.js",
+    "start": "node ./index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.758.0",
+    "axios": "^1.8.2",
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "hashbnb": "file:..",
+    "image-downloader": "^4.3.0",
+    "jsonwebtoken": "^9.0.2",
+    "mime-types": "^2.1.35",
+    "mongoose": "^8.17.0",
+    "multer": "^1.4.5-lts.1"
+  },
+  "description": ""
+}

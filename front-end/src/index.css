@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-400: hsl(349, 100%, 61%);
+  --color-primary-500: hsl(349, 100%, 51%);
+  --color-primary-600: hsl(349, 100%, 41%);
+  --color-primary-700: hsl(349, 100%, 36%);
+  --color-primary-800: hsl(349, 100%, 31%);
+  --color-primary-900: hsl(349, 100%, 26%);
+  --color-primary-950: hsl(349, 100%, 21%);
+
+  --color-primary: var(--color-primary-400);
+
+  --font-hashbnb:
+    Airbnb Cereal VF, Circular, -apple-system, BlinkMacSystemFont, Roboto,
+    Helvetica Neue, sans-serif;
+}
+
+@layer apply {
+  input:not([type="date"]) {
+    @apply rounded-full border border-gray-300 px-4 py-2;
+  }
+
+  textarea {
+    @apply resize-none rounded-3xl border border-gray-300 px-4 py-2;
+  }
+
+  button,
+  .button {
+    @apply cursor-pointer border border-gray-300 px-4 py-2 font-bold transition;
+  }
+}
