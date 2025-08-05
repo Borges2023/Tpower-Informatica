@@ -9,5 +9,13 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Borges2023/hashbnb-youtube-main.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Borges2023/hashbnb-youtube-main/issues"
+  },
+  "homepage": "https://github.com/Borges2023/hashbnb-youtube-main#readme",
   "description": ""
 }
