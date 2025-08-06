@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
@@ -21,7 +22,7 @@ dotenv.config();
 
 const app = express();
 const ENV = app.get("env");
-const BUCKET = "hashbnb-gabarito";
+const BUCKET = "hashbnb";
 const { PORT, MONGO_URI, JWT_SECRET, S3_ACCESS_KEY, S3_SECRET_KEY } =
   process.env;
 const bcryptSalt = bcrypt.genSaltSync(10);
