@@ -11,6 +11,7 @@ import Accomodation from "./pages/Accomodation";
 axios.defaults.baseURL =
   import.meta.env.MODE === "development" ? "http://localhost:3000/api" : "/api";
 axios.defaults.withCredentials = true;
+axios.defaults.timeout = 15000;
 
 console.log(import.meta.env.MODE);
 

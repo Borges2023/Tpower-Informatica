@@ -1,7 +1,6 @@
 import "dotenv/config";
 import express from "express";
 import dotenv from "dotenv";
-import mongoose from "mongoose";
 import cors from "cors";
 import bcrypt from "bcryptjs";
 import cookieParser from "cookie-parser";
@@ -17,27 +16,26 @@ import mime from "mime-types";
 import User from "./models/User.js";
 import Place from "./models/Place.js";
 import Booking from "./models/Booking.js";
+import { connectDb } from "./config/db.js";
 
 dotenv.config();
 
 const app = express();
 const ENV = app.get("env");
 const BUCKET = "hashbnb";
-const { PORT, MONGO_URI, JWT_SECRET, S3_ACCESS_KEY, S3_SECRET_KEY } =
-  process.env;
+const {
+  PORT = 3000,
+  JWT_SECRET,
+  S3_ACCESS_KEY,
+  S3_SECRET_KEY,
+  FRONTEND_URL = "http://localhost:5173",
+} = process.env;
 const bcryptSalt = bcrypt.genSaltSync(10);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const connectDB = async () => {
-  try {
-    await mongoose.connect(MONGO_URI);
-    console.log("Conectado ao MongoDB!");
-  } catch (error) {
-    console.log("Deu erro ao conectar com o banco", error.response.data);
-  }
-};
+const connectDB = connectDb;
 
 const JWTVerify = async (req) => {
   return new Promise((resolve, reject) => {
@@ -105,7 +103,21 @@ const uploadToS3 = async (path, filename, mimetype) => {
 app.use(express.json());
 app.use(cookieParser());
 app.use("/uploads", express.static(__dirname + "/uploads"));
-app.use(cors({ credentials: true, origin: "http://localhost:3153" }));
+const allowedOrigins = new Set([
+  FRONTEND_URL,
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+]);
+
+app.use(
+  cors({
+    credentials: true,
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+      return callback(new Error("Origem não permitida pelo CORS."));
+    },
+  })
+);
 
 app.get("/api/profile", async (req, res) => {
   const { token } = req.cookies;
@@ -120,11 +132,10 @@ app.get("/api/profile", async (req, res) => {
 });
 
 app.post("/api/register", async (req, res) => {
-  connectDB();
-
   const { name, email, password } = req.body;
 
   try {
+    await connectDB();
     const newUser = await User.create({
       name,
       email,
@@ -136,16 +147,23 @@ app.post("/api/register", async (req, res) => {
 
     res.json(newObjUser);
   } catch (error) {
-    res.status(400).json(error);
+    const isDuplicateEmail = error?.code === 11000;
+    const isDatabaseUnavailable = error?.code === "DATABASE_UNAVAILABLE";
+    res.status(isDuplicateEmail ? 409 : isDatabaseUnavailable ? 503 : 500).json({
+      message: isDuplicateEmail
+        ? "Este e-mail já está cadastrado."
+        : isDatabaseUnavailable
+          ? "O banco de dados está indisponível. Verifique a variável MONGO_URI do backend."
+        : "Não foi possível concluir o cadastro. Tente novamente.",
+    });
   }
 });
 
 app.post("/api/login", async (req, res) => {
-  connectDB();
-
   const { email, password } = req.body;
 
   try {
+    await connectDB();
     const foundUser = await User.findOne({ email });
 
     if (foundUser) {
@@ -167,7 +185,12 @@ app.post("/api/login", async (req, res) => {
       res.status(400).json("Usuário não encontrado");
     }
   } catch (error) {
-    res.status(500).json(JSON.stringify(error));
+    const isDatabaseUnavailable = error?.code === "DATABASE_UNAVAILABLE";
+    res.status(isDatabaseUnavailable ? 503 : 500).json({
+      message: isDatabaseUnavailable
+        ? "O banco de dados está indisponível. Verifique a variável MONGO_URI do backend."
+        : "Não foi possível efetuar o login.",
+    });
   }
 });
 

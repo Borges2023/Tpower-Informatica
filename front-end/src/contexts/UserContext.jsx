@@ -10,10 +10,15 @@ const UserContextProvider = ({ children }) => {
   const [ready, setReady] = useState(false);
 
   const getUser = async () => {
-    const { data } = await axios.get("/profile");
-
-    setUser(data);
-    setReady(true);
+    try {
+      const { data } = await axios.get("/profile");
+      setUser(data);
+    } catch (error) {
+      console.error("Não foi possível consultar a sessão do usuário.", error);
+      setUser(null);
+    } finally {
+      setReady(true);
+    }
   };
 
   useEffect(() => {

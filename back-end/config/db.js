@@ -1,15 +1,33 @@
 import "dotenv/config";
 import mongoose from "mongoose";
 
-const {
-  MONGO_URL = "mongodb+srv://tpowerinformatica2016:ehYWhLcRyN8SiOmy@cluster0.ff5uvt3.mongodb.net/hashbnb?retryWrites=true&w=majority&appName=Cluster0",
-} = process.env;
+const databaseUrl = process.env.MONGO_URI || process.env.MONGO_URL;
+let connectionPromise;
+
+mongoose.connection.on("error", (error) => {
+  console.error("Erro de conexão com o MongoDB:", error.message);
+});
 
 export const connectDb = async () => {
-  try {
-    await mongoose.connect(MONGO_URL);
-    console.log("Deu certo ao conectar com o banco!");
-  } catch (error) {
-    console.log("NÃO deu certo ao conectar com o banco!", error);
+  if (mongoose.connection.readyState === 1) return;
+
+  if (!databaseUrl) {
+    const error = new Error("Configure MONGO_URI ou MONGO_URL no arquivo .env.");
+    error.code = "DATABASE_UNAVAILABLE";
+    throw error;
   }
+
+  if (!connectionPromise) {
+    connectionPromise = mongoose
+      .connect(databaseUrl, { serverSelectionTimeoutMS: 10000 })
+      .then(() => console.log("Conectado ao MongoDB!"))
+      .catch((error) => {
+        connectionPromise = undefined;
+        error.code = "DATABASE_UNAVAILABLE";
+        throw error;
+      });
+  }
+
+  await connectionPromise;
 };
+

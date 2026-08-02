@@ -7,28 +7,26 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [redirect, setRedirect] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (submitting) return;
 
-    // console.log(
-    //   `Rolou um submit com essas infos: ${name}, ${email}, ${password}`,
-    // );
+    setSubmitting(true);
+    setErrorMessage("");
 
     try {
-      const respostaPost = await axios.post("/register", {
-        name,
-        email,
-        password,
-      });
-
-      // alert("Usuário cadastrado com sucesso!");
-
+      await axios.post("/register", { name, email, password });
       setRedirect(true);
     } catch (error) {
-      alert(
-        `Erro no cadastro do usuário ${error.response.data.errorResponse.errmsg}`,
+      setErrorMessage(
+        error.response?.data?.message ||
+          "Não foi possível conectar ao servidor. Verifique se o backend está em execução.",
       );
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -38,30 +36,40 @@ const Register = () => {
     <div className="flex w-full grow flex-col items-center justify-center gap-6 px-4 py-8">
       <h1 className="text-3xl font-bold">Faça seu cadastro</h1>
 
-      <form
-        className="flex w-full max-w-96 flex-col gap-2"
-        onSubmit={handleSubmit}
-      >
+      <form className="flex w-full max-w-96 flex-col gap-2" onSubmit={handleSubmit}>
         <input
-          onChange={(e) => setName(e.target.value)}
+          required
+          value={name}
+          onChange={(event) => setName(event.target.value)}
           type="text"
           placeholder="Digite seu nome"
         />
         <input
-          onChange={(e) => setEmail(e.target.value)}
+          required
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
           type="email"
           placeholder="Digite seu e-mail"
         />
         <input
-          onChange={(e) => setPassword(e.target.value)}
+          required
+          minLength="6"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
           type="password"
           placeholder="Digite sua senha"
         />
 
-        <button className="bg-primary-400 rounded-full text-white">
-          Cadastrar
+        <button
+          type="submit"
+          disabled={submitting}
+          className="bg-primary-400 rounded-full text-white disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {submitting ? "Cadastrando..." : "Cadastrar"}
         </button>
       </form>
+
+      {errorMessage && <p className="text-center text-red-600">{errorMessage}</p>}
 
       <p>
         Já tem uma conta?{" "}
